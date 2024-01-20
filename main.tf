@@ -76,7 +76,7 @@ module "extractor_repository" {
 
   project     = local.project
   env         = var.env
-  name        = "filing-extractor"
+  name        = "extractor"
   description = "Image to spin up containers which extract the filings"
 }
 
@@ -87,7 +87,7 @@ module "cluster" {
   env                = var.env
   region             = var.region
   private_subnet_ids = module.network.private_subnet_ids
-  name               = "filing-extractor"
+  name               = "extractor"
   description        = "Extracts the filing data from the SEC"
   repo_url           = module.extractor_repository.url
   cpu                = 256
@@ -121,7 +121,7 @@ module "slicer_repository" {
 
   project     = local.project
   env         = var.env
-  name        = "filing-slicer"
+  name        = "slicer"
   description = "Image to spin up containers which slice the financial statements out of the filing"
 }
 
