@@ -8,14 +8,14 @@ output "id" {
   value       = aws_s3_bucket.main.id
 }
 
-output "queue_arn" {
-  description = "ARN of the queue"
-  value       = aws_sqs_queue.main.arn
+output "queue_arns" {
+  description = "ARNs of the queues"
+  value       = aws_sqs_queue.main.*.arn
 }
 
-output "queue_url" {
-  description = "URL to the queue"
-  value       = aws_sqs_queue.main.url
+output "queue_urls" {
+  description = "URLs to the queues"
+  value       = aws_sqs_queue.main.*.url
 }
 
 output "read_access_policies" {
@@ -42,7 +42,7 @@ output "read_access_policies" {
           {
             Action   = ["sqs:ReceiveMessage", "sqs:DeleteMessage", "sqs:GetQueueAttributes"]
             Effect   = "Allow"
-            Resource = aws_sqs_queue.main.arn
+            Resource = aws_sqs_queue.main.*.arn
           },
         ]
       })

@@ -57,3 +57,8 @@ variable "logging" {
   type        = bool
   default     = false
 }
+
+variable "repo_url" {
+  description = "URL of the repository from which the Lambda pulls it's image from"
+  type        = string
+}

@@ -1,15 +1,3 @@
-resource "aws_ecr_repository" "main" {
-  name                 = "${var.project}-${var.env}-${var.name}"
-  image_tag_mutability = "MUTABLE"
-  force_delete         = true
-
-  tags = {
-    Project     = var.project
-    Environment = var.env
-    Description = "Image for the ${var.name} Lambda function to execute"
-  }
-}
-
 data "aws_iam_policy_document" "assume_role" {
   statement {
     actions = ["sts:AssumeRole"]
@@ -45,7 +33,7 @@ resource "aws_lambda_function" "non_vpc" {
   function_name = "${var.project}-${var.env}-${var.name}"
   package_type  = "Image"
   role          = aws_iam_role.main.arn
-  image_uri     = "${aws_ecr_repository.main.repository_url}:latest"
+  image_uri     = "${var.repo_url}:latest"
   memory_size   = var.memory_size
   timeout       = var.timeout
 
@@ -75,7 +63,7 @@ data "aws_iam_policy_document" "logging" {
 
 resource "aws_iam_policy" "logging" {
   count  = var.logging ? 1 : 0
-  name   = "${var.project}-${var.env}-logging"
+  name   = "${var.project}-${var.env}-${var.name}-lambda-logging"
   policy = data.aws_iam_policy_document.logging.0.json
 }
 
@@ -117,7 +105,7 @@ resource "aws_lambda_function" "vpc" {
   function_name = "${var.project}-${var.env}-${var.name}"
   package_type  = "Image"
   role          = aws_iam_role.main.arn
-  image_uri     = "${aws_ecr_repository.main.repository_url}:latest"
+  image_uri     = "${var.repo_url}:latest"
   memory_size   = var.memory_size
   timeout       = var.timeout
 

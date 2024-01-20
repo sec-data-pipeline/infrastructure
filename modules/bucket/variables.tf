@@ -18,6 +18,11 @@ variable "name" {
   type        = string
 }
 
+variable "queues" {
+  description = "List of queues which will hold CreateObject events of it's S3 bucket"
+  type        = list(string)
+}
+
 variable "max_message_size" {
   description = "The limit of how many bytes a message can contain before the queue rejects it"
   type        = number
