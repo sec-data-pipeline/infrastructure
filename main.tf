@@ -71,6 +71,15 @@ module "income_bucket" {
   description = "Bucket to store the income statement of filings"
 }
 
+module "extractor_repository" {
+  source = "./modules/repository"
+
+  project     = local.project
+  env         = var.env
+  name        = "filing-extractor"
+  description = "Image to spin up containers which extract the filings"
+}
+
 module "cluster" {
   source = "./modules/cluster"
 
@@ -78,36 +87,33 @@ module "cluster" {
   env                = var.env
   region             = var.region
   private_subnet_ids = module.network.private_subnet_ids
-  tasks = [
+  name               = "filing-extractor"
+  description        = "Extracts the filing data from the SEC"
+  repo_url           = module.extractor_repository.url
+  cpu                = 256
+  memory             = 512
+  security_groups = [
+    module.network.default_security_group_id,
+    module.database.security_group_id
+  ]
+  env_variables = [
     {
-      name        = "extractor"
-      description = "Extracts the filing data from the SEC"
-      cpu         = 256
-      memory      = 512
-      security_groups = [
-        module.network.default_security_group_id,
-        module.database.security_group_id
-      ]
-      env_variables = [
-        {
-          name  = "REGION"
-          value = var.region
-        },
-        {
-          name  = "SECRETS_ARN"
-          value = module.database.secrets_arn
-        },
-        {
-          name  = "ARCHIVE_BUCKET"
-          value = module.archive_bucket.id
-        }
-      ]
-      policies = concat(
-        module.archive_bucket.write_access_policies,
-        module.database.secrets_access_policies
-      )
+      name  = "REGION"
+      value = var.region
+    },
+    {
+      name  = "SECRETS_ARN"
+      value = module.database.secrets_arn
+    },
+    {
+      name  = "ARCHIVE_BUCKET"
+      value = module.archive_bucket.id
     }
   ]
+  task_policies = concat(
+    module.archive_bucket.write_access_policies,
+    module.database.secrets_access_policies
+  )
 }
 
 module "slicer_repository" {
