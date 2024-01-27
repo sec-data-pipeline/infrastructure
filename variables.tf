@@ -27,3 +27,18 @@ variable "public_ssh_key_file_path" {
   description = "Path to the public SSH file to access the bastion host"
   type        = string
 }
+
+variable "cashflow_matcher" {
+  description = "JSON for matcher to determine cashflow statement in filing"
+  type        = any
+}
+
+variable "balance_matcher" {
+  description = "JSON for matcher to determine balance sheet in filing"
+  type        = any
+}
+
+variable "income_matcher" {
+  description = "JSON for matcher to determine income statement in filing"
+  type        = any
+}

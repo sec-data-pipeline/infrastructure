@@ -144,6 +144,7 @@ module "cashflow_slicer_function" {
     ARCHIVE_BUCKET  = module.archive_bucket.id
     ARCHIVE_QUEUE   = module.archive_bucket.queue_urls[0]
     CASHFLOW_BUCKET = module.cashflow_bucket.id
+    STATEMENT       = jsonencode(var.cashflow_matcher)
   }
   policies = concat(
     module.archive_bucket.read_access_policies,
@@ -170,6 +171,7 @@ module "balance_slicer_function" {
     ARCHIVE_BUCKET = module.archive_bucket.id
     ARCHIVE_QUEUE  = module.archive_bucket.queue_urls[1]
     BALANCE_BUCKET = module.balance_bucket.id
+    STATEMENT      = jsonencode(var.balance_matcher)
   }
   policies = concat(
     module.archive_bucket.read_access_policies,
@@ -196,6 +198,7 @@ module "income_slicer_function" {
     ARCHIVE_BUCKET = module.archive_bucket.id
     ARCHIVE_QUEUE  = module.archive_bucket.queue_urls[2]
     INCOME_BUCKET  = module.income_bucket.id
+    STATEMENT      = jsonencode(var.income_matcher)
   }
   policies = concat(
     module.archive_bucket.read_access_policies,
@@ -215,5 +218,5 @@ module "bastion_host" {
   public_ssh_key       = file(var.public_ssh_key_file_path) # path to public SSH key for bastion host access
   allowed_ip_addresses = var.allowed_ip_addresses
   secrets_arn          = module.database.secrets_arn
-  bucket_arns          = [module.archive_bucket.arn, module.balance_bucket.arn, module.cashflow_bucket.arn]
+  bucket_arns          = [module.archive_bucket.arn, module.balance_bucket.arn, module.cashflow_bucket.arn, module.income_bucket.arn]
 }
