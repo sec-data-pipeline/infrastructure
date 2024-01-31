@@ -34,7 +34,7 @@ data "aws_iam_policy_document" "access_bucket" {
   statement {
     actions = ["s3:*"]
 
-    resources = concat(var.bucket_arns, ["${var.bucket_arns[0]}/*", "${var.bucket_arns[1]}/*", "${var.bucket_arns[2]}/*"])
+    resources = concat(var.bucket_arns, ["${var.bucket_arns[0]}/*", "${var.bucket_arns[1]}/*"])
   }
 }
 

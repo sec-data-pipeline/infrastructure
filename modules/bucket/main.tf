@@ -61,7 +61,7 @@ resource "aws_s3_bucket_policy" "main" {
 }
 
 data "aws_iam_policy_document" "s3_queue" {
-  count = length(var.queues) > 1 ? 0 : 1
+  count = length(var.queues) > 1 || length(var.queues) == 0 ? 0 : 1
 
   statement {
     effect = "Allow"
@@ -83,7 +83,7 @@ data "aws_iam_policy_document" "s3_queue" {
 }
 
 data "aws_iam_policy_document" "fanout" {
-  count = length(var.queues) > 1 ? 1 : 0
+  count = length(var.queues) > 1 && length(var.queues) != 0 ? 1 : 0
   statement {
     effect = "Allow"
 
@@ -104,7 +104,7 @@ data "aws_iam_policy_document" "fanout" {
 }
 
 resource "aws_sns_topic" "fanout" {
-  count  = length(var.queues) > 1 ? 1 : 0
+  count  = length(var.queues) > 1 && length(var.queues) != 0 ? 1 : 0
   name   = "${var.project}-${var.env}-${var.name}-sqs-fanout"
   policy = data.aws_iam_policy_document.fanout[0].json
 
@@ -116,7 +116,7 @@ resource "aws_sns_topic" "fanout" {
 }
 
 data "aws_iam_policy_document" "sns_queue" {
-  count = length(var.queues) > 1 ? length(var.queues) : 0
+  count = length(var.queues) > 1 && length(var.queues) != 0 ? length(var.queues) : 0
 
   statement {
     effect = "Allow"
@@ -153,7 +153,7 @@ resource "aws_sqs_queue" "main" {
   name                       = "${var.project}-${var.env}-${var.queues[count.index]}"
   max_message_size           = var.max_message_size
   message_retention_seconds  = var.message_retention_seconds
-  visibility_timeout_seconds = 120
+  visibility_timeout_seconds = var.visibility_timeout_seconds
   policy                     = length(var.queues) > 1 ? data.aws_iam_policy_document.sns_queue[count.index].json : data.aws_iam_policy_document.s3_queue[0].json
 
   redrive_policy = jsonencode({
@@ -187,7 +187,7 @@ resource "aws_sns_topic_subscription" "main" {
 }
 
 resource "aws_s3_bucket_notification" "topic" {
-  count  = length(var.queues) > 1 ? 1 : 0
+  count  = length(var.queues) > 1 && length(var.queues) != 0 ? 1 : 0
   bucket = aws_s3_bucket.main.id
 
   topic {
