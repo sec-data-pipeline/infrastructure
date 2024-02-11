@@ -29,13 +29,13 @@ resource "aws_iam_role" "main" {
 }
 
 resource "aws_lambda_function" "non_vpc" {
-  count         = length(var.vpc_config) == 0 ? 1 : 0 # this lambda resource is not added to vpc
-  function_name = "${var.project}-${var.env}-${var.name}"
-  package_type  = "Image"
-  role          = aws_iam_role.main.arn
-  image_uri     = "${var.repo_url}:latest"
-  memory_size   = var.memory_size
-  timeout       = var.timeout
+  count                          = length(var.vpc_config) == 0 ? 1 : 0 # this lambda resource is not added to vpc
+  function_name                  = "${var.project}-${var.env}-${var.name}"
+  package_type                   = "Image"
+  role                           = aws_iam_role.main.arn
+  image_uri                      = "${var.repo_url}:latest"
+  memory_size                    = var.memory_size
+  timeout                        = var.timeout
 
   environment {
     variables = var.env_variables
@@ -101,13 +101,13 @@ resource "aws_iam_role_policy_attachment" "vpc" {
 }
 
 resource "aws_lambda_function" "vpc" {
-  count         = length(var.vpc_config) > 0 ? 1 : 0 # this lambda resource is added to vpc
-  function_name = "${var.project}-${var.env}-${var.name}"
-  package_type  = "Image"
-  role          = aws_iam_role.main.arn
-  image_uri     = "${var.repo_url}:latest"
-  memory_size   = var.memory_size
-  timeout       = var.timeout
+  count                          = length(var.vpc_config) > 0 ? 1 : 0 # this lambda resource is added to vpc
+  function_name                  = "${var.project}-${var.env}-${var.name}"
+  package_type                   = "Image"
+  role                           = aws_iam_role.main.arn
+  image_uri                      = "${var.repo_url}:latest"
+  memory_size                    = var.memory_size
+  timeout                        = var.timeout
 
   environment {
     variables = var.env_variables

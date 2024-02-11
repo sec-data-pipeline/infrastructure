@@ -81,18 +81,6 @@ resource "aws_subnet" "private" {
   }
 }
 
-resource "aws_db_subnet_group" "private" {
-  name        = "${var.project}-${var.env}-database"
-  description = "Groups private subnets for RDS instance"
-  subnet_ids  = aws_subnet.private.*.id
-
-  tags = {
-    Project     = var.project
-    Environment = var.env
-    Description = "Groups private subnets for RDS instance"
-  }
-}
-
 resource "aws_route_table" "private" {
   vpc_id = aws_vpc.main.id
 

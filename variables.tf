@@ -11,19 +11,23 @@ variable "env" {
 variable "db_username" {
   description = "Name of master user in the SEC database"
   type        = string
+  sensitive   = true
 }
 
 variable "db_password" {
   description = "Password of master user in the SEC database"
   type        = string
+  sensitive   = true
 }
 
 variable "allowed_ip_addresses" {
   description = "List of allowed IP address ranges e.g. [\"{your IP address}/32\"] to whitlist your IP address"
   type        = list(string)
+  sensitive   = true
 }
 
 variable "public_ssh_key_file_path" {
   description = "Path to the public SSH file to access the bastion host"
   type        = string
+  sensitive   = true
 }

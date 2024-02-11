@@ -20,7 +20,7 @@ output "queue_urls" {
 
 output "read_access_policies" {
   description = "IAM policies for read access to resources created in this module as intended"
-  value = [
+  value = length(var.queues) > 0 ? [
     {
       name = "read-access-${var.name}-bucket"
       policy = jsonencode({
@@ -43,6 +43,20 @@ output "read_access_policies" {
             Action   = ["sqs:ReceiveMessage", "sqs:DeleteMessage", "sqs:GetQueueAttributes"]
             Effect   = "Allow"
             Resource = aws_sqs_queue.main.*.arn
+          },
+        ]
+      })
+    }
+    ] : [
+    {
+      name = "read-access-${var.name}-bucket"
+      policy = jsonencode({
+        Version = "2012-10-17"
+        Statement = [
+          {
+            Action   = ["s3:GetObject"]
+            Effect   = "Allow"
+            Resource = "${aws_s3_bucket.main.arn}/*"
           },
         ]
       })

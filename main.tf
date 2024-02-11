@@ -18,13 +18,12 @@ module "database" {
 
   project             = local.project
   env                 = var.env
+  name                = "sec"
+  description         = "Stores data about SEC filings"
   vpc_id              = module.network.id
-  subnet_group_name   = module.network.private_subnet_group_name
+  subnets             = module.network.private_subnet_ids
   allocated_storage   = 20
   instance_class      = "db.t3.micro"
-  db_engine           = "postgres"
-  db_engine_version   = "15.3"
-  db_port             = 5432
   db_name             = "sec"
   db_username         = var.db_username
   db_password         = var.db_password
@@ -37,38 +36,17 @@ module "archive_bucket" {
   project     = local.project
   env         = var.env
   name        = "archive"
-  queues      = ["archive-cashflow", "archive-balance", "archive-income"]
+  queues      = ["archive"]
   description = "Bucket to store the raw SEC filings"
 }
 
-module "cashflow_bucket" {
+module "table_bucket" {
   source = "./modules/bucket"
 
   project     = local.project
   env         = var.env
-  name        = "cashflow"
-  queues      = ["cashflow"]
-  description = "Bucket to store the cash flow statements of filings"
-}
-
-module "balance_bucket" {
-  source = "./modules/bucket"
-
-  project     = local.project
-  env         = var.env
-  name        = "balance"
-  queues      = ["balance"]
-  description = "Bucket to store the balance sheets of filings"
-}
-
-module "income_bucket" {
-  source = "./modules/bucket"
-
-  project     = local.project
-  env         = var.env
-  name        = "income"
-  queues      = ["income"]
-  description = "Bucket to store the income statement of filings"
+  name        = "table"
+  description = "Bucket to store the table of the filings"
 }
 
 module "extractor_repository" {
@@ -102,7 +80,7 @@ module "cluster" {
       value = var.region
     },
     {
-      name  = "SECRETS_ARN"
+      name  = "SECRETS"
       value = module.database.secrets_arn
     },
     {
@@ -125,81 +103,35 @@ module "slicer_repository" {
   description = "Image to spin up containers which slice the financial statements out of the filing"
 }
 
-module "cashflow_slicer_function" {
+module "slicer_function" {
   source = "./modules/function"
 
-  project     = local.project
-  env         = var.env
-  name        = "cashflow-slicer"
-  description = "Lambda function to slice the cash flow statement out of a filing"
-  repo_url    = module.slicer_repository.url
-  timeout     = 7
-  memory_size = 512
-  logging     = true
+  project        = local.project
+  env            = var.env
+  name           = "slicer"
+  description    = "Lambda function to slice the tables out of the filings"
+  repo_url       = module.slicer_repository.url
+  timeout        = 15
+  memory_size    = 512
+  logging        = true
   trigger = {
     queue_arn = module.archive_bucket.queue_arns[0]
   }
-  env_variables = {
-    REGION          = var.region
-    ARCHIVE_BUCKET  = module.archive_bucket.id
-    ARCHIVE_QUEUE   = module.archive_bucket.queue_urls[0]
-    CASHFLOW_BUCKET = module.cashflow_bucket.id
-  }
-  policies = concat(
-    module.archive_bucket.read_access_policies,
-    module.cashflow_bucket.write_access_policies
-  )
-}
-
-module "balance_slicer_function" {
-  source = "./modules/function"
-
-  project     = local.project
-  env         = var.env
-  name        = "balance-slicer"
-  description = "Lambda function to slice the balance sheet out of a filing"
-  repo_url    = module.slicer_repository.url
-  timeout     = 7
-  memory_size = 512
-  logging     = true
-  trigger = {
-    queue_arn = module.archive_bucket.queue_arns[1]
+  vpc_config = {
+    subnet_ids         = module.network.private_subnet_ids
+    security_group_ids = [module.network.default_security_group_id, module.database.security_group_id]
   }
   env_variables = {
     REGION         = var.region
     ARCHIVE_BUCKET = module.archive_bucket.id
-    ARCHIVE_QUEUE  = module.archive_bucket.queue_urls[1]
-    BALANCE_BUCKET = module.balance_bucket.id
+    QUEUE          = module.archive_bucket.queue_urls[0]
+    TABLE_BUCKET   = module.table_bucket.id
+    SECRETS        = module.database.secrets_arn
   }
   policies = concat(
+    module.database.secrets_access_policies,
     module.archive_bucket.read_access_policies,
-    module.balance_bucket.write_access_policies
-  )
-}
-
-module "income_slicer_function" {
-  source = "./modules/function"
-
-  project     = local.project
-  env         = var.env
-  name        = "income-slicer"
-  description = "Lambda function to slice the income statement out of a filing"
-  repo_url    = module.slicer_repository.url
-  timeout     = 7
-  memory_size = 512
-  logging     = true
-  trigger = {
-    queue_arn = module.archive_bucket.queue_arns[2]
-  }
-  env_variables = {
-    REGION         = var.region
-    ARCHIVE_BUCKET = module.archive_bucket.id
-    ARCHIVE_QUEUE  = module.archive_bucket.queue_urls[2]
-    INCOME_BUCKET  = module.income_bucket.id
-  }
-  policies = concat(
-    module.archive_bucket.read_access_policies,
-    module.income_bucket.write_access_policies
+    module.table_bucket.write_access_policies
   )
 }
 
@@ -215,5 +147,4 @@ module "bastion_host" {
   public_ssh_key       = file(var.public_ssh_key_file_path) # path to public SSH key for bastion host access
   allowed_ip_addresses = var.allowed_ip_addresses
   secrets_arn          = module.database.secrets_arn
-  bucket_arns          = [module.archive_bucket.arn, module.balance_bucket.arn, module.cashflow_bucket.arn]
 }

@@ -31,19 +31,16 @@ variable "instance_type" {
 variable "public_ssh_key" {
   description = "Public key for SSH tunnel to EC2 instance (bastion host)"
   type        = string
+  sensitive   = true
 }
 
 variable "allowed_ip_addresses" {
   description = "List of IP addresses that are allowed to SSH tunnel to EC2 instance (bastion host)"
   type        = list(string)
+  sensitive   = true
 }
 
 variable "secrets_arn" {
   description = "ARN of the secrets to be accessed"
   type        = string
-}
-
-variable "bucket_arns" {
-  description = "ARNs of the S3 buckets this bastion host can access"
-  type        = list(string)
 }

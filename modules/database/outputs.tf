@@ -1,6 +1,6 @@
 output "security_group_id" {
   description = "ID of security group which is allowed to access RDS instance"
-  value       = aws_security_group.outbound.id
+  value       = aws_security_group.external.id
 }
 
 output "id" {
@@ -13,14 +13,9 @@ output "arn" {
   value       = aws_db_instance.main.arn
 }
 
-output "endpoint" {
-  description = "Host endpoint of RDS instance"
-  value       = aws_db_instance.main.endpoint
-}
-
 output "secrets_arn" {
   description = "ARN of the secrets to access the database"
-  value       = aws_secretsmanager_secret.main.arn
+  value       = aws_secretsmanager_secret.external.arn
 }
 
 output "secrets_access_policies" {
@@ -34,7 +29,7 @@ output "secrets_access_policies" {
           {
             Action   = ["secretsmanager:GetSecretValue"]
             Effect   = "Allow"
-            Resource = aws_secretsmanager_secret.main.arn
+            Resource = aws_secretsmanager_secret.external.arn
           },
         ]
       })

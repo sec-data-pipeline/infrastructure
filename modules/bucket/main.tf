@@ -61,7 +61,7 @@ resource "aws_s3_bucket_policy" "main" {
 }
 
 data "aws_iam_policy_document" "s3_queue" {
-  count = length(var.queues) > 1 ? 0 : 1
+  count = length(var.queues) == 1 ? 1 : 0
 
   statement {
     effect = "Allow"
@@ -197,7 +197,7 @@ resource "aws_s3_bucket_notification" "topic" {
 }
 
 resource "aws_s3_bucket_notification" "queue" {
-  count  = length(var.queues) > 1 ? 0 : 1
+  count  = length(var.queues) == 1 ? 1 : 0
   bucket = aws_s3_bucket.main.id
 
   queue {

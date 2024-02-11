@@ -30,14 +30,6 @@ data "aws_iam_policy_document" "read_secrets" {
   }
 }
 
-data "aws_iam_policy_document" "access_bucket" {
-  statement {
-    actions = ["s3:*"]
-
-    resources = concat(var.bucket_arns, ["${var.bucket_arns[0]}/*", "${var.bucket_arns[1]}/*", "${var.bucket_arns[2]}/*"])
-  }
-}
-
 resource "aws_iam_role" "main" {
   name               = "${var.project}-${var.env}-bastion-host"
   assume_role_policy = data.aws_iam_policy_document.assume_role.json
@@ -47,15 +39,10 @@ resource "aws_iam_role" "main" {
     policy = data.aws_iam_policy_document.read_secrets.json
   }
 
-  inline_policy {
-    name   = "${var.project}-${var.env}-bastion-host-access-bucket"
-    policy = data.aws_iam_policy_document.access_bucket.json
-  }
-
   tags = {
     Project     = var.project
     Environment = var.env
-    Description = "IAM role for bastion host to read secrets and access S3 bucket"
+    Description = "IAM role for bastion host to read secrets"
   }
 }
 

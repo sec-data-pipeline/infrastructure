@@ -8,6 +8,16 @@ variable "env" {
   type        = string
 }
 
+variable "description" {
+  description = "Short text to describe purpose of the database"
+  type        = string
+}
+
+variable "name" {
+  description = "Name of the RDS instance"
+  type        = string
+}
+
 variable "vpc_id" {
   description = "ID of main VPC"
   type        = string
@@ -31,31 +41,18 @@ variable "db_name" {
 variable "db_username" {
   description = "Username of master user in database"
   type        = string
+  sensitive   = true
 }
 
 variable "db_password" {
   description = "Password of master user in database"
   type        = string
+  sensitive   = true
 }
 
-variable "subnet_group_name" {
-  description = "Name of subnet group in which RDS instance lives in"
-  type        = string
-}
-
-variable "db_port" {
-  description = "Port on which RDS instance listens on"
-  type        = number
-}
-
-variable "db_engine" {
-  description = "Engine on which database of RDS instance runs on"
-  type        = string
-}
-
-variable "db_engine_version" {
-  description = "Version of engine on which database of RDS instance runs on"
-  type        = string
+variable "subnets" {
+  description = "IDs of subnets in which the RDS instance lives in"
+  type        = list(string)
 }
 
 variable "skip_final_snapshot" {
